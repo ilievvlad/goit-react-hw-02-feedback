@@ -1,8 +1,15 @@
 import { Component } from "react";
 
-import { Section } from "../Components/Section/Section";
-import { FeedbackOptions } from "../Components/FeedbackOptions/FeedbackOptions";
-import { Statistics } from "../Components/Statistics/Statistics";
+import { Section } from "Components/Section/Section";
+import { FeedbackOptions } from "Components/FeedbackOptions/FeedbackOptions";
+import { Statistics } from "Components/Statistics/Statistics";
+import { Notification } from "Components/Notification/Notification";
+
+const buttons = [
+	{ id: "good", title: "Good" },
+	{ id: "neutral", title: "Neutral" },
+	{ id: "bad", title: "Bad" }
+];
 
 export class App extends Component {
 	state = {
@@ -14,28 +21,44 @@ export class App extends Component {
 	handleClickFeedback = e => {
 		const { name } = e.target;
 		this.setState(prevState => ({ [name]: prevState[name] + 1 }));
-		console.log(name)
+	};
+
+	countTotalFeedback = () => {
+		const { good, neutral, bad } = this.state;
+		return good + neutral + bad;
+	};
+
+	countPositiveFeedbackPercentage = () => {
+		return this.countTotalFeedback()
+			? Math.round((this.state.good * 100) / this.countTotalFeedback())
+			: 0;
 	};
 
 	render() {
 		const { good, neutral, bad } = this.state;
+		const totalFeedback = this.countTotalFeedback();
+		const totalPercentage = this.countPositiveFeedbackPercentage();
 
 		return (
 			<div className="container">
 				<Section title={"Please leave feedback"}>
 					<FeedbackOptions
-						options={["Good", "Neutral", "Bad"]}
+						options={buttons}
 						onLeaveFeedback={this.handleClickFeedback}
 					/>
 				</Section>
 				<Section title={"Statistics"}>
-					<Statistics
-						good={good}
-						neutral={neutral}
-						bad={bad}
-						total={4}
-						positivePercentage={5}
-					/>
+					{totalFeedback > 0 ? (
+						<Statistics
+							good={good}
+							neutral={neutral}
+							bad={bad}
+							total={totalFeedback}
+							positivePercentage={totalPercentage}
+						/>
+					) : (
+						<Notification message={"There is no feedback"} />
+					)}
 				</Section>
 			</div>
 		);
